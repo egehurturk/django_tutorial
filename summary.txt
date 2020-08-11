@@ -1,0 +1,57 @@
+Summary of Lecture 1 (Setup):
+    - Basic setup:
+        - To create django project, run `django-admin startproject <name>`
+        - To run your script, run `python manage.py runserver`
+
+
+
+Summary of Lecture 2 (Apps & Urls):
+    - Apps:
+        - Django project includes apps (components). 
+        - To create app, run `python manage.py startapp <name>`
+        - Add a new `urls.py` file in your app
+    
+    - Views:
+        - We've created a few views and returned `HttpResponse` (not convenient)
+    
+    - Urls:
+        - We've registered the blog application's url's in the main `urls.py` file. 
+            - Note: when we open e.g. '/blog/posts', the `include()` function strips off the blog part,
+                    then sends the 'posts/' url to the url handler of blog app. 
+        - We've created a new `urls.py` file and added a few paths.
+            - By convention, use '<name>-home' to prevent collision
+
+
+
+Summary of Lecture 3 (Templates):
+    - Template Rendering:
+        - We can render templates with the `render(request, <template_name>, vars)` function.
+        - We've created a dummy post and passed that to HTML file.
+    
+    - Template operations:
+        - We learned how to use the  % for i in posts % expression and the % if % statement/
+        - We learned that we can use variables with the double curly brackets notation.
+        - We accessed the dictionary attributes with the following notation:
+            - posts.title
+    
+    - Template Inheritance:
+        - We learned how to create a base template and inherit that template on other pages.
+            - With the extends keyword and creating block content blocks in the base template
+
+    - Static Files:
+        - Load static:
+            - We should first create a directory in our app called static.
+                - then inside, a new blog directory
+                    - Then inside, our static files (css, js, img)
+            
+            - To load static files (css, js, img), we should use the 'load static' code block
+              at the first line of the base template.
+
+            - Then, use the '% static 'blog/main.css' %' when we want to use static.
+    
+    - URLs:
+        - Use URLs in template:
+            - To uss URLs in a template, use the '% url "blog-post" %' code block
+                - the "blog-post" name is the URL name that we defined in the `urls.py` file.
+                - It is convenient to use name so that when we change the url, we won't need to
+                  change in our templates. 
