@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from users import views as user_views
 
 # A note about include():
     # Whenever Django encounters with a `include()` function, it *chops* off whatever part of the url
@@ -22,6 +23,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('blog.urls')) # Blog will appear at localhost/blog (first stage), now localhost/
+    path('register/', user_views.register, name='register'),
+    path('', include('blog.urls')),# Blog will appear at localhost/blog (first stage), now localhost/
+    
 
 ]

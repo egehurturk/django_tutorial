@@ -126,3 +126,92 @@ Summary of Lecture 5 (Database):
         - We've registered our Post model
             - `admin.site.register(Post)`
     
+
+Summart of Lecture 6 (User Registration):
+    - Create a new users app for User Registration / Authorization
+        - `python manage.py startapp users`
+             - Add the new app to the INSTALLED APPS section on settings.py 
+                - 'users.apps.UserConfig'
+
+    - UserCreationForm:
+        - Django already has predefined forms that will save you from writing a user registration form from
+          scratch. It is located in `from django.contrib.auth.forms import UserCreationForm`.
+        - UserCreationForm will be very useful as it contains crucial logic for registration 
+    
+        - We can pass our form variable `form = UserCreationForm()` to our 'register.html' page.
+            - Show form with {{ form }} block.
+            - we need to specify <form method='POST'></form>.
+            - CSRF Token is a necessary token that is required to be secure.
+                - {% csrf_token %}
+            
+            - {{ form.as_p }} will render form as paragraph.
+            - save the form with `form.save()` method.
+
+
+    - Requests:
+        - Hence we defined the method to POST, we should handle the POST request in our views.py file.
+        - the request variable that we've passed in our view function has a method:
+            |- `request.method` will contain the method that we send to the page.
+            |- We will use `if request.method == 'POST'` to specify that if the request is POST, do something
+            |- Then, in the if block, we will instanciate the form UserCreationForm with our request.POST item.
+                |- Else, we will instanciate a new blank UserCreationForm.
+
+            |- The, inside the if statement, we will add another if statement `if form.is_valid()`
+                |- the `is_valid()` function checks the form and returns True for valid form.
+
+            |- Then, we will get the username from the POST request with:
+                |- `username = form.cleaned_data.get('username)`
+                    |- the `.cleaned_data` is the cleaned information about our request.
+
+            - 
+ 
+    - Flash Messages:
+        - Django has a nice flash messages that are for one request i.e when we reload, they will disappear.
+            - First, we need to import them:
+                - `from django.contrib import messages`
+
+            - messages has various types: messages.debug, messages.success, messages.info, messages.error
+            - messages.success will get the first argument as request, then the string we want to display.
+            - We want to display messages in base.html using {% if messages %}
+            - {{ message.tags }} will contain the tag of your message.
+
+    - Redirect:
+        - Django has a shortcut called 'redirect':
+            - Import: `from django.shortcuts import redirect`.
+                - Usage: return redirect('blog-home')
+
+    - Forms:
+        - When we display our form variable, it does not display such as an email field. 
+          If we want to add a new field, create a new file called `forms.py`.
+
+            - Our new form will inherit from UserCreationForm:
+                - `class UserRegistrationForm(UserCreationForm):`
+                - In this class, we will add a new email field, do that with `email = forms.EmailField()`
+                    - By default, it will have required=True, but we can make it false.
+
+                - We need to define a meta class inside our form class:
+                    - `class UserRegistrationForm(UserCreationForm):
+                            email = forms.EmailField(required=True)
+
+                            class Meta:
+                                model = User
+                                fields = ['username', 'email', 'password1', 'password2']`
+
+                    -  inside our Meta class, we will define our `model=User` by importing `from django.contrib.auth.models import User`
+                    - The model that will affected is the User model, e.g when we save the form, it will save the User.
+                    - We need to specify fields and pass the ordered list of fields (password1 for first password, password2 for confirmation).
+
+    
+    - Design of Form:
+        - crispy_forms:
+            - Install crispy forms.
+                - add the 'crispy_forms' to the INSTALLED_APPS in settings.py
+            
+            - Config crispy-forms:
+                - In settings.py, add the following script:
+                    ` CRISPY_TEMPLATE_PACK='bootstrap4'
+                    You can change this, look for docs.
+            
+            - Using as a tag:
+                - In 'register.html', first add the following code block: {% load crispy_form_tags %}
+                - Then, use the filter: {{ form|crispy }}
