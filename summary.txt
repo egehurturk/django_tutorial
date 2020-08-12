@@ -48,10 +48,81 @@ Summary of Lecture 3 (Templates):
               at the first line of the base template.
 
             - Then, use the '% static 'blog/main.css' %' when we want to use static.
-    
+ 
     - URLs:
         - Use URLs in template:
             - To uss URLs in a template, use the '% url "blog-post" %' code block
                 - the "blog-post" name is the URL name that we defined in the `urls.py` file.
                 - It is convenient to use name so that when we change the url, we won't need to
                   change in our templates. 
+
+
+
+Summary of Lecture 4 (Admin):
+    - Admin Page:
+        - We've made migrations (database stuff):
+            - First, we've used the `python manage.py makemigrations` command
+            - Then, we've used the `python manage.py migrate` command.
+        
+        - Superuser:
+            - We created a superuser (which has access to all things) using the following command:
+                - `python manage.py createsuperuser`
+
+        - Admin Interface:
+            - We've explored the Django admin interface, added a user from admin page.
+
+
+Summary of Lecture 5 (Database):
+    - Creating a Database Object:
+        - Django's ORM works as follows: We need to define a class that holds the database table object:
+            - We've created a Post class which has the title, content, author, and date_posted fields.
+                - We've used the models.<name>Field function and passsed it some values.
+            
+            - models.TextField is similar to models.CharField, but it is unrestricted. 
+            - You can never update the `auto_now_add=True` datetime field, so we've used the
+                - `date_posted = models.DateTimeField(default=timezone.now)` and imported the 
+                   `from django.utils import timezone`.
+                
+                - We've created a ForeignKey to our User object that we've imported from the 
+                  `from django.contrib.auth.models import User`.
+                    - `author = models.ForeignKey(User, on_delete=models.CASCADE)`
+                        - `models.CASCADE` means that if the user is deleted, delete its all posts.
+
+    
+    - SQL:
+        - To see the exact SQL Migration code, run:
+            - `python manage.py sqlmigrate blog 0001`
+        
+    
+    - ORM:
+        - ORM helps us to write SQL code without even writing it.
+        - Migrations are useful because it allows to make changes to our database without even writing SQL update code.
+
+        - Django shell: `python manage.py shell`
+
+        - ORM Queries:
+            - `User.objects.all()` returns all the users
+            - `User.objects.first()/.last()` returns first/last users
+            - `User.objects.filter(username='EgeH')` returns the specified filter
+            - `user = User.objects.filter(username='EgeH').first()` returns 'EgeH'.
+            - We can access User attributes:
+                - `user.id`
+                - `user.pk ` (Primary Key)
+            
+            - `User.objects.get(id=1)` queries the User with ID 1.
+            - `Post(title='First Post', content='First Blog Post content', author=user)` will create a new Post.
+            -  When we create a post object, we should save to database using `post_1.save()`
+            - To Create a nice representation of our Object, we should define a `__str__()` method.
+            - We can access the ForeignKey Classes's fields with the associated class:
+                - `post.author.email` -> 'ege@hurturk.com'
+            
+            - We've deleted the dummy data, and instead queired the posts from our database.
+        
+    - Filters:
+        - We've applied filters in our home template page.
+            - {{ date_posted|date:"F d, Y" }}
+    
+    - Admin GUI:
+        - We've registered our Post model
+            - `admin.site.register(Post)`
+    
