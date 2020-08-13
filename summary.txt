@@ -215,3 +215,67 @@ Summart of Lecture 6 (User Registration):
             - Using as a tag:
                 - In 'register.html', first add the following code block: {% load crispy_form_tags %}
                 - Then, use the filter: {{ form|crispy }}
+
+
+
+Summary of Lecture 7 (User Login/Logout):
+    - Creating Login/logout URL:
+        - In urls.py, import:
+        `from django.contrib.auth import views as auth_views`. We should import as `auth_views` to prevent collision
+
+        - Then, create a path:
+            `path('login/', auth_views.LoginView.as_view(), name='login'),`
+            `path('logout/', auth_views.LogoutView.as_view(), name='login'),`
+            
+            - This will not handle the template, we should create the templates:
+                - To render templates, we should pass the `template_name` field in `.as_view()`:
+                    - path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),`
+                    - path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='login'),`
+                
+                - Then, we should create the templates.
+                    - Just copy paste from register.html and change things.
+                
+    - Redirection:
+        - When we have our form ready, if we enter our username/password correcty, the form will redirect us to:
+          'accounts/profile' page which does not exists.
+        
+        - We want to redirect to the home page.
+
+        - To solve:
+            -  Add this to settings.py:
+                - `LOGIN_REDIRECT_URL='blog-home'`. This will redirect us to home page.
+    
+    - Log in:
+        - Everything should be same
+
+    - Log out:
+        - Create a logout page.
+
+    - Changing the Navbar (for Login/Logout):
+        - Django has a user object that contains information about the current user
+            - We can use the {% if user.is_authenticated %} to display the login and register routes.
+            `{% if user.is_authenticated %}
+                <a class="nav-item nav-l ink" href="{% url 'login' %}">Login</a>
+              {% else %}
+                <a class="nav-item nav-l ink" href="{% url 'login' %}">Login</a>
+                <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+              {% endif %}`
+
+    - Profile:
+        - Template:
+            - Note: we don't need to pass the user variable to access the user object in our HTML file.
+              We can directly use it: `{{ user.username }}`
+        
+        - Login required:
+            - If we visit '/profile' if we are logged out, we can still access that URL.
+                - We are going to use the `login_required` decorator.
+
+                `@login_required
+                 def profile(request):
+                    return render(request, 'users/profile.html')`
+
+            - We should specify the LOGIN_URL parameter in settings.py to the login page:
+                - LOGIN_URL = 'login'
+            
+            - A nice thing about django is that it tracks the page that we made a get request without logged in,
+              so when we log in, it will redirect to the page we made a get request.

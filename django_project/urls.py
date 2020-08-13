@@ -16,15 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from users import views as user_views
+from django.contrib.auth import views as auth_views
 
-# A note about include():
-    # Whenever Django encounters with a `include()` function, it *chops* off whatever part of the url
-    # matched up to that point, and only sends the remaining string to <app>.urls.
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', user_views.register, name='register'),
-    path('', include('blog.urls')),# Blog will appear at localhost/blog (first stage), now localhost/
-    
-
+    path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
+    path('profile/', user_views.profile, name='profile'),
+    path('', include('blog.urls')),  
 ]
