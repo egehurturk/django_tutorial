@@ -1,0 +1,6 @@
+*.sqlite3
+/blog/__pycache__
+/blog/migrations
+/django_project/__pycache__
+/users/__pycache__
+/users/migrations
