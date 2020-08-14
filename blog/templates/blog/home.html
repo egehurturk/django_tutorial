@@ -5,6 +5,7 @@
     {% for post in posts %}
 
         <article class="media content-section">
+          <img src="{{ post.author.profile.image.url }}" alt="Profile pic" class='rounded-circle article-img'>
           <div class="media-body">
             <div class="article-metadata">
               <a class="mr-2" href="#">{{ post.author }}</a>
@@ -18,3 +19,11 @@
     {% endfor %}
 
 {% endblock content %}
+
+<!-- 
+if len(post.content > 20):
+    display(post.content[:, :20] + '<a href='#'>Read More...</a>'
+else:
+    display(post.content)
+  
+ -->

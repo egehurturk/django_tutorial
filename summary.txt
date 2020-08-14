@@ -279,3 +279,234 @@ Summary of Lecture 7 (User Login/Logout):
             
             - A nice thing about django is that it tracks the page that we made a get request without logged in,
               so when we log in, it will redirect to the page we made a get request.
+
+
+
+Summary of Lecture 8 (User profile and Picture):
+    - Profile Model:
+        - We created a new Profile model to handle the profile of an user:
+            - We want to have a OneToOne field because One profile is associated with One user and one User is
+              associated with one profile.
+
+            - In Imagefield, we pass the default argument so that the default image will be an avatar
+              and the upload_pics means that the profile_pics will be uploaded to the profile_pics directory.
+
+              `class Profile(models.Model):
+                   user = models.OneToOneField(User, on_delete=models.CASCADE)
+                   bio = models.TextField(default='Bio for user')
+                   image = models.ImageField(default='default.jpg', upload_to='profile_pics')
+
+                   def __str__(self):
+                       return f'{self.user.username} Profile'`
+
+                 - The `upload_to` field means that the images will be upload to the `profile_pics/` directory
+                 - The `default` field means that the default picture will be the given one.
+
+            - To use ImageField, we should install Pillow library.
+
+            - Then, we applied migrations.
+                - `python manage.py makemigrations`
+                - `python manage.py migrate`
+
+            - We registered our site to admin, and manually created some User profiles.
+
+            - Note: We can chain Relationships: such as, `user.profile.image` will return the profile image.
+
+    
+    - Profile Template:
+        - We created a new template for profile, we accessed the image field of the user with the {{ user.profile.image.url }}
+          variable.
+
+    - Adjustment to Settings:
+        - To make the profile images work, we added a few things in the base `settings.py` file:
+            - `MEDIA_ROOT = os.path.join(BASE_DIR, 'media')` for Full path to the directory that django saves images. 
+                - Our images will be in media/profile_pics
+            - `MEDIA_URL = '/media/'` How we are going to access the image in the browser.
+
+
+        - In order to have profile, we should manually add new profile to every user, which is not convenient. We'll
+          handle this in a minute.
+
+
+    - Then, in our main `urls.py` file, we imported the
+        * `from django.conf import settings` for accessing settings
+        * `from django.conf.urls.static import static` for static files.
+
+        Then:
+            - `if settings.DEBUG:
+                   urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)`
+            
+                - This means that if we are in development environment, upload the profile pictures to the 
+                  static MEDIA_URL defined in settings.py (/media/) and the document root is MEDIA_ROOT defined in
+                  `settings.py`. 
+
+    
+    - Signals:
+        - Signals is something that handles User profile creation when a user is added:
+            - We import:
+
+                * `from django.db.models.signals import post_save` for Signal that is fired after an object is saved
+                * `from django.contrib.auth.models import User` the Sender of the signal 
+                * `from django.dispatch import receiver` Recivier -> a function that recieves the signals and performs a task
+                * `from django.core.exceptions import ObjectDoesNotExist` for Error handling.
+                * `from .models import Profile` Our post model.
+
+            - Then, we create a recivier:
+                `
+                @receiver(post_save, sender=User)
+                def create_profile(sender, instance, created, **kwargs):
+                    try:
+                        instance.profile.save()
+                    except ObjectDoesNotExist:
+                        Profile.objects.create(user=instance)   
+                `
+
+                - We define a recivier with the `@recivier(...)` decorator, and it takes the arguments SIGNAL and
+                  SENDER, which is a user creation and our sender is USER model.
+
+                - We create a normal function which takes the arguments SENDER, INSTANCE, CREATED, **KWARGS:
+                    - the sender is our User,
+                    - the instance is an instance of our User model, which is the User model that is currently saved
+                    - Created is a boolen value for the model created. (TRUE OR FALSE)
+                    - And **kwargs
+
+                - Inside the function, we try to save the profile
+                    - Here it thus means that although every Profile has a related user, not every user has a Profile.
+                      It is possible that there are Users for which no Profile exists.
+
+                      - If you thus query some_user.profile there are two scenario's that can unfold:
+                            * there is a related Profile object that is the fetched, and returned; or
+                            * there is no such object, and then it raises a RelatedObjectDoesNotExist error.
+
+                      - We thus check if the instance has a `.profile` that leads to the Profile model
+                        In case it is not, it will raise an exception, and create a new one.
+
+
+            - When a user is saved, send a signal (post_save signal)
+              The reciever wil catch the signal from the sender (User) and performs the task.
+              If the user was created, create a profile object that is the instance of the User object.
+
+        - Importing signals to `apps.py`:
+            - We need to import our signal to the `apps.py` file in our users directory:
+                - `class UsersConfig(AppConfig):
+                    name = 'users'
+
+                    def ready(self):
+                        import users.signals
+
+                    `
+
+Summary of Lecture 9 (Updating User Proifle):
+    - Forms:
+        - We've created 2 new forms:
+            - UserUpdateForm:
+                - This is a form to update the user form.
+                    - Fields: Username, Email
+            
+            - ProfileUpdateForm:
+                - This is a from to update the profile image.
+                    - model = Profile
+                    - fields = ['image']
+
+        - Adding forms to template:
+            - We've created a `<form method="POST" enctype="multipart/form-data">` tag.
+                - `<form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <fieldset class="form-group">
+                            <legend class="border-bottom mb-4">Profile Info</legend>
+                            {{ u_form|crispy }}
+                            {{ p_form|crispy }}
+                        </fieldset>
+                        <div class="form-group">
+                            <button class="btn btn-outline-info" type="submit">Update</button>
+                        </div>
+                    </form>`
+                
+                - The `enctype='multipart/form-data' is for using forms that have an image field.
+                - Then, added the usual csrf token
+                - We added the 2 forms with `{{ u_form|crispy }}` and `{{ p_form|crispy }}` that
+                  we passed in `views.py`. 
+        
+        - Form handling:
+            - We add our usual `if request.method == 'POST':` statement.
+                - ` if request.method == 'POST':
+                        u_form = UserUpdateForm(request.POST, instance=request.user) # Creating the form with the current user's info
+                        p_form = ProfileUpdateForm(
+                                                    request.POST, 
+                                                    request.FILES,
+                                                    instance=request.user.profile
+                                                ) # Creating the form with the current user's info
+
+                        if u_form.is_valid() and p_form.is_valid():
+                            u_form.save()
+                            p_form.save()
+
+                            messages.success(request, f'Your account has been updated!')
+                            return redirect('profile')
+
+                    else:
+                        u_form = UserUpdateForm(instance=request.user) # Creating the form with the current user's info
+                        p_form = ProfileUpdateForm(instance=request.user.profile) # Creating the form with the current user's info
+
+                        
+                    context = {
+                        'u_form': u_form,
+                        'p_form': p_form,
+                    }`
+                
+                - Then, we instinciate our `UserUpdateForm` with the request.POST object, and with the
+                  instance of the user. (Creating the form with the current user's info)
+
+                - Then, we instinciate our `ProfileUpdateForm` with the request.POST object, request.FILES
+                  object, and the instance=request.user.profile field. 
+
+
+                 -  If we did not make a POST request, then instinciate our forms with the current
+                    info of the user displayed.
+
+                - If the u_form and p_form are valid:
+                    - Save both of them.
+                    - Create a flash message
+                    - Then redirect to the profile page. It is important to redirect to the 
+                      profile page rather than waiting for the redirection at the end of the function
+                      as it will not display a confirm form resubmission alert.
+
+                - Then, as usual, create the context dictionary.
+
+        - `django-cleanup`:
+            - django cleanup is a good package that will delete the old profile images.
+
+            - To use it, just install it `conda install -c conda-forge django-cleanup` or 
+              `pip install django-cleanup`
+
+            - Then, add `django-cleanup` to SETTINGS.PY in INSTALLED_APPS.
+
+        - Resizing the Image:
+            - Overriding the `.save()` method for models:
+                - We can easily override the `.save()` method of a model by creating
+                   a new `save()` method:
+
+                   `def save(self, *args, **kwargs):
+                        super().save(*args, **kwargs)
+                        ...
+                    `
+                    - We need to pass in the `*args, **kwargs` arguments to save.
+
+                - We need to import the PIL library in order to perform operations on images:
+                    - `from PIL import Image`
+                    - ` img = Image.open(self.image.path)
+                        if img.height > 300 or img.width > 300:
+                            output_size = (300,300)
+                            img.thumbnail(output_size)
+                            img.save(self.image.path)
+                        `
+                    
+                    - We first open the image with `Image.open` and pass the image path.
+                    - Then, check if the width and the height of the image.
+                    - Then, resize the image with the tuple that we passed in to the `img.thumbnail` method.
+                    - Finally, save the image with the self.image.path path.
+
+        - Adding the User Profile Image to the blog post:
+            - ` <img src="{{ post.author.profile.image.url }}" alt="Profile pic" class='rounded-circle article-img'>`
+                - `{{ post.author.profile.image.url }}` is saying that the URL of the image of the profile of the author of this posts will be 
+                   used as the source.
