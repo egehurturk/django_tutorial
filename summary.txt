@@ -510,3 +510,45 @@ Summary of Lecture 9 (Updating User Proifle):
             - ` <img src="{{ post.author.profile.image.url }}" alt="Profile pic" class='rounded-circle article-img'>`
                 - `{{ post.author.profile.image.url }}` is saying that the URL of the image of the profile of the author of this posts will be 
                    used as the source.
+
+
+Summary of Lecture 10 (CRUD):
+    - Function Based Views:
+        - We've been using FBV, our `urlpatterns` are directed to a certain view, which are those functions,
+          and they handle the logic and returns a template page.
+
+    - Class Based Views:
+        - They have more built-in functionality.
+        - There are different types of CBV:
+            - List Views: Listing some database objects
+            - Detail Views: the details of a e.g. youtube video detail.
+            - Create Views: the creation of a e.g. youtube video creation.
+            - Update Views
+            - Delete Views
+            - etc.
+        - Many sites have general functionality.
+
+        - Usage:
+            - Import the CBV from: `from django.views.generic import ListView`.
+            - Create a class that inherits from the generic view.
+            -
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
