@@ -5,18 +5,18 @@ from .views import (
     PostListView,
     PostDetailView,
     PostCreateView,
+    PostUpdateView,
+    PostDeleteView,
 )
 
 urlpatterns = [
-    path('', PostListView.as_view(), name='blog-home'),  # By convention, use '<name>-home' to prevent collision
-    path('about/', views.about, name='blog-about'),  # localhost/about
+    path('', PostListView.as_view(), name='blog-home'),
     path('post/<int:pk>', PostDetailView.as_view(), name='post-detail'),
     path('post/new/', PostCreateView.as_view(), name='post-create'),
-
+    path('post/<int:pk>/update', PostUpdateView.as_view(), name='post-update'),
+    path('post/<int:pk>/delete', PostDeleteView.as_view(), name='post-delete'),
+    path('about/', views.about, name='blog-about'),  # localhost/about
 
 ]
 
-# When we use CBV, we can't use them directly in urls. But, django has a method avaliable that does this
-# `as_view()`
-# <app>/<model>_<viewtype>.html
-# We can use variables in our uRL paths with the <type:var> syntax.
+
